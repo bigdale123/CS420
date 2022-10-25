@@ -156,38 +156,52 @@ public class DashboardController implements Initializable {
         }
     }
     public void onChangeLocation() {
+        // Modified version of this code
+        // https://code.makery.ch/blog/javafx-dialogs-official/
         TreeItem<Item> item = (TreeItem<Item>) Farm.getSelectionModel().getSelectedItem();
-        Dialog<String> dialog = new Dialog<>();
+        Dialog<Pair<String, String>> dialog = new Dialog<>();
         dialog.setTitle("Change Location");
         dialog.setHeaderText("Change Location:");
         dialog.setResizable(true);
 
-        Label label1 = new Label("X: ");
-        Label label2 = new Label("Y: ");
-        TextField text1 = new TextField();
-        TextField text2 = new TextField();
+        ButtonType loginButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
 
-        GridPane grid = new GridPane();
-        grid.add(label1, 1, 1);
-        grid.add(text1, 2, 1);
-        grid.add(label2, 1, 2);
-        grid.add(text2, 2, 2);
-        dialog.getDialogPane().setContent(grid);
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.setPadding(new Insets(20, 150, 10, 10));
 
-        ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        ButtonType buttonTypeOk = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
-        
-        Optional<String> result = dialog.showAndWait();
+        TextField from = new TextField();
+        from.setPromptText("x");
+        TextField to = new TextField();
+        to.setPromptText("y");
 
+        gridPane.add(new Label("x:"), 0, 0);
+        gridPane.add(from, 1, 0);
+        gridPane.add(new Label("y:"), 0, 1);
+        gridPane.add(to, 1, 1);
 
-        if (item != null) {
-            item.getValue().setLocationX(0);
-            item.getValue().setLocationY(0);
+        dialog.getDialogPane().setContent(gridPane);
+
+        // Convert the result to a username-password-pair when the login button is clicked.
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == loginButtonType) {
+                return new Pair<>(from.getText(), to.getText());
+            }
+            return null;
+        });
+
+        Optional<Pair<String, String>> result = dialog.showAndWait();
+
+        result.ifPresent(pair -> {
+            item.getValue().setLocationX(Integer.parseInt(pair.getKey()));
+            item.getValue().setLocationY(Integer.parseInt(pair.getValue()));
             Farm.refresh();
-        }
+        });
 
-        System.out.println("onChangeLocation");
+        System.out.println(item.getValue().getLocationX());
+        System.out.println(item.getValue().getLocationY());
     }
     public void onChangePrice() {
         TreeItem<Item> item = (TreeItem<Item>) Farm.getSelectionModel().getSelectedItem();
@@ -202,11 +216,14 @@ public class DashboardController implements Initializable {
         }
     }
     public void onChangeDimensions() {
+        // Modified version of this code
+        // https://code.makery.ch/blog/javafx-dialogs-official/
         TreeItem<Item> item = (TreeItem<Item>) Farm.getSelectionModel().getSelectedItem();
-        Dialog<Pair<String, String>> dialog = new Dialog<>();
-        dialog.setTitle("TestName");
+        Dialog<ArrayList<String>> dialog = new Dialog<>();
+        dialog.setTitle("Change Dimensions");
+        dialog.setHeaderText("Change Dimensions:");
+        dialog.setResizable(true);
 
-        // Set the button types.
         ButtonType loginButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
 
@@ -215,46 +232,42 @@ public class DashboardController implements Initializable {
         gridPane.setVgap(10);
         gridPane.setPadding(new Insets(20, 150, 10, 10));
 
-        TextField from = new TextField();
-        from.setPromptText("length");
-        TextField to = new TextField();
-        to.setPromptText("width");
-       // TextField to = new TextField();
-        //to.setPromptText("height");
+        TextField height = new TextField();
+        TextField width = new TextField();
+        TextField length = new TextField();
 
-        gridPane.add(new Label("length:"), 0, 0);
-        gridPane.add(from, 1, 0);
-        gridPane.add(new Label("width:"), 0, 1);
-        gridPane.add(to, 1, 1);
-        gridPane.add(new Label("height:"), 0, 2);
-        gridPane.add(to, 1, 2);
+        gridPane.add(new Label("Height:"), 0, 0);
+        gridPane.add(height, 1, 0);
+        gridPane.add(new Label("Width:"), 0, 1);
+        gridPane.add(width, 1, 1);
+        gridPane.add(new Label("Length:"), 0, 2);
+        gridPane.add(length, 1, 2);
 
         dialog.getDialogPane().setContent(gridPane);
 
-        // Request focus on the username field by default.
-        Platform.runLater(() -> from.requestFocus());
-
-        // Convert the result to a username-password-pair when the login button is clicked.
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == loginButtonType) {
-                return new Pair<>(from.getText(), to.getText());
+                ArrayList<String> strings = new ArrayList<>();
+                strings.add(height.getText());
+                strings.add(width.getText());
+                strings.add(length.getText());
+                return strings;
             }
             return null;
         });
 
-        Optional<Pair<String, String>> result = dialog.showAndWait();
+        Optional<ArrayList<String>> result = dialog.showAndWait();
 
-        result.ifPresent(pair -> {
-            System.out.println("From=" + pair.getKey() + ", To=" + pair.getValue());
-        }); 
-        if (item != null) {
-            item.getValue().setLength(10);
-            item.getValue().setHeight(10);
+        result.ifPresent(strings -> {
+            item.getValue().setHeight(Float.valueOf(strings.get(0)));
+            item.getValue().setWidth(Float.valueOf(strings.get(1)));
+            item.getValue().setLength(Float.valueOf(strings.get(2)));
             Farm.refresh();
-            // add area to type length/height?
-        }
+        });
 
-//        System.out.println("onChangeDimensions");
+        System.out.println(item.getValue().getHeight());
+        System.out.println(item.getValue().getWidth());
+        System.out.println(item.getValue().getLength());
     }
     public void onDelete() {
         TreeItem item = (TreeItem) Farm.getSelectionModel().getSelectedItem();

@@ -56,7 +56,7 @@ public class Item {
         return this.location_y;
     }
     public void setLocationY(int newLocationY){
-        this.location_x=newLocationY;
+        this.location_y=newLocationY;
     }
     //Length of Item
     public float getLength(){
@@ -77,7 +77,7 @@ public class Item {
         return this.height;
     }
     public void setHeight(float newHeight){
-        this.width=newHeight;
+        this.height=newHeight;
     }
 
 
